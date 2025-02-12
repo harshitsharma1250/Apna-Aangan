@@ -9,11 +9,20 @@ const RegisterPage = () => {
   const [email, setEmail] = useState("") ;
   const [password, setPassword] = useState("") ;
   
-  const handleSubmit = (e) =>{
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(name, email, password)
-    axios.get('/test')
-  }
+    console.log(name, email, password);
+    try {
+        const response = await axios.post('/register', {
+            name,
+            email,
+            password,
+        });
+        console.log("Server Response:", response.data);
+    } catch (error) {
+        console.error("Error registering:", error);
+    }
+};
   return (
     <motion.div 
       className="mt-4 grow flex items-center justify-around"

@@ -1,7 +1,42 @@
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useContext, useState } from "react";
+import axios from "axios";
+import { UserContext } from "../context/UserContext";
 
 const LoginPage = () => {
+
+  const [email, setEmail] = useState("") ;
+  const [password, setPassword] = useState("") ;
+  const [redirect, setRedirect] = useState(false) ;
+
+  const {setUser} = useContext(UserContext)
+
+  const loginUser = async (e) =>{
+
+    e.preventDefault();
+
+    try {
+      const {data} = await axios.post('/login',{
+        email: email ,
+        password: password,
+      })
+      
+      setRedirect(true);
+      setUser(data);
+      alert("Login successful")
+    }
+    catch (error) {
+      console.log(error.message, "Can't login user from frontend")
+      alert("Login failed")
+    }
+  }
+
+  if (redirect) {
+    return <Navigate to={'/'} />
+  }
+
+  
   return (
     <motion.div 
       className="mt-4 grow flex items-center justify-around"
@@ -29,15 +64,20 @@ const LoginPage = () => {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.4 }}
+          onSubmit={loginUser}
         >
           <input 
             type="email" 
             placeholder="your@email.com"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
             className="w-full p-2 border border-gray-300 rounded-lg mb-2"
           />
           <input 
             type="password" 
             placeholder="password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
             className="w-full p-2 border border-gray-300 rounded-lg mb-4"
           />
           <motion.button 
