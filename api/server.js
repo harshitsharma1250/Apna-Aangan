@@ -102,6 +102,10 @@ app.get('/profile', (req, res) => {
 });
 
 
+app.post('/logout', (req,res)=>{
+    res.cookie('jwt-authorization','').json(true)
+})
+
 
 app.listen(3000, (req, res)=>{
     console.log("Server listening on port 3000")

@@ -2,7 +2,7 @@ import { Link, Navigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useContext, useState } from "react";
 import axios from "axios";
-import { UserContext } from "../context/UserContext";
+import { UserContext } from "../context/UserContext.jsx";
 
 const LoginPage = () => {
 
@@ -10,7 +10,7 @@ const LoginPage = () => {
   const [password, setPassword] = useState("") ;
   const [redirect, setRedirect] = useState(false) ;
 
-  const {setUser} = useContext(UserContext)
+  const {user, setUser} = useContext(UserContext)
 
   const loginUser = async (e) =>{
 
@@ -21,9 +21,11 @@ const LoginPage = () => {
         email: email ,
         password: password,
       })
-      
+      console.log("user before ", user)
+      setUser(data.user);
+      console.log("user after ", user)
       setRedirect(true);
-      setUser(data);
+
       alert("Login successful")
     }
     catch (error) {
