@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { Link, useParams } from "react-router-dom"
 import Perks from "../Perks";
+import axios from "axios";
 
 const PlacesPage = () => {
     const {action} = useParams()
@@ -19,7 +20,7 @@ const PlacesPage = () => {
     console.log(action)
     console.log(title)
     console.log(description)
-    console.log(address)
+    console.log(address )
 
     function inputHeader(text) {
         return (
@@ -38,6 +39,11 @@ const PlacesPage = () => {
             {inputDescription(description)}
           </>
         );
+      }
+
+      async function addPhotoByLink (ev){
+        ev.preventDefault() ;
+        const {data:filename} = await axios.post('/upload-by-link', {link:photoLink})
       }
 
 
@@ -62,9 +68,16 @@ const PlacesPage = () => {
         <input type="text" value={address} onChange={ev => setAddress(ev.target.value)}placeholder="address"/>
         {preInput('Photos','more = better')}
         {/* <PhotosUploader addedPhotos={addedPhotos} onChange={setAddedPhotos} /> */}
+        <div className="flex gap-2">
+        <input value={photoLink}
+               onChange={ev => setPhotoLink(ev.target.value)}
+               type="text" placeholder={'Add using a link ....jpg'}/>
+        <button onClick={addPhotoByLink} className="bg-gray-200 px-4 rounded-2xl">Add&nbsp;photo</button>
+      </div>
         {preInput('Description','description of the place')}
         <textarea value={description} onChange={ev => setDescription(ev.target.value)} />
         {preInput('Perks','select all the perks of your place')}
+
         <div className="grid mt-2 gap-2 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
           <Perks selected={perks} onChange={setPerks} />
         </div>

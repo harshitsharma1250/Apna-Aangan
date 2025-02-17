@@ -7,14 +7,16 @@ import bcryptjs from 'bcryptjs';
 import { generateToken } from './generateToken.js';
 import cookieParser from 'cookie-parser';
 import jwt from 'jsonwebtoken'
+import imageDownloader from 'image-downloader'
+import {dirname} from 'path'
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 dotenv.config();
 const app = express();
+app.use('/uploads', express.static(__dirname+'/uploads'));
 
-
-
-app.use(express.json());
-app.use(cookieParser())
 
 const connectDb = async () =>{
     try{
@@ -34,6 +36,9 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
 })) ;
+
+app.use(express.json());
+app.use(cookieParser())
 
 app.post('/register', async (req, res) => {
     const { name, email, password } = req.body;
@@ -106,6 +111,15 @@ app.post('/logout', (req,res)=>{
     res.cookie('jwt-authorization','').json(true)
 })
 
+app.post('/upload-by-link', async (req, res)=>{
+    const {link} = req.body ;
+    const newName = Date.now() +'.jpg'
+    await imageDownloader.image({
+        url: link,
+        dest : __dirname + '/uploads/' + newName,
+    })
+    res.json(__dirname + '/uploads/' + newName)
+} )
 
 app.listen(3000, (req, res)=>{
     console.log("Server listening on port 3000")
