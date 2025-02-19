@@ -12,6 +12,7 @@ import {dirname} from 'path'
 import { fileURLToPath } from 'url';
 import multer from "multer";
 import fs from "fs";
+import {PlaceModel} from './models/Place.js'
 
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -152,6 +153,64 @@ app.post('/upload', photosMiddleware.array('photos',100), async (req,res)=>{
         res.status(500).json({ error: "Internal Server Error" });
     }
 } )
+
+app.post('/places', async (req, res) => {
+    try {
+        const token = req.cookies["jwt-authorization"];
+        if (!token) {
+            return res.status(401).json({ error: "Unauthorized: No token provided" });
+        }
+
+        jwt.verify(token, process.env.JWT_SECRET, async (err, userData) => {
+            if (err) {
+                return res.status(403).json({ error: "Forbidden: Invalid token" });
+            }
+
+            const { title, address, photos, description, perks, extraInfo, checkIn, checkOut, maxGuests } = req.body;
+
+            const placeDoc = await PlaceModel.create({
+                owner: userData.userId, 
+                title,
+                address,
+                photos,
+                description,
+                perks,
+                extraInfo,
+                checkIn,
+                checkOut,
+                maxGuests,
+            });
+            console.log(userData)
+            return res.json(placeDoc);
+        });
+
+    } catch (error) {
+        console.error("Server Error:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+app.get('/places', (req,res)=>{
+    try {
+        const token = req.cookies["jwt-authorization"];
+        if (!token) {
+            return res.status(401).json({ error: "Unauthorized: No token provided" });
+        }
+
+        jwt.verify(token, process.env.JWT_SECRET, async (err, userData) => {
+            if (err) {
+                return res.status(403).json({ error: "Forbidden: Invalid token" });
+            }
+            const {userId} = userData
+            console.log(userId);
+            res.json(await PlaceModel.find({owner:userId}))
+        });
+
+    } catch (error) {
+        console.error("Server Error:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+})
 
 app.listen(3000, (req, res)=>{
     console.log("Server listening on port 3000")

@@ -1,52 +1,27 @@
-import { useContext, useState } from "react"  
-import { UserContext } from "../context/UserContext"
-import {Link, Navigate} from 'react-router-dom'
-import { useParams } from "react-router-dom"
-import axios from "axios"
-import PlacesPage from "./PlacesPage"
-const Account = () => {
-  const {user, setUser, ready} = useContext(UserContext)
-  const [redirect, setRedirect] = useState(null)
-  
-  let {subpage} = useParams() ;
-  
-  const logout = async () =>{
-    await axios.post('/logout')
-    setUser(null)
-    setRedirect('/')
-  }
-  
-  if(ready && !user && !redirect){
-    return <Navigate to= {"/login"} />  
-  }
-  if(!ready){
-    return 'Loading...'
-  }
-  
-  if(subpage === undefined){
-    subpage = "profile"
-  }
+import { Link, useLocation } from "react-router-dom"
 
-  if(redirect){
-    return <Navigate to={'/'}/>
-  }
+const AccountNav = () => {
+    const {pathname} = useLocation()
+    let subpage = pathname.split('/')?.[2]
 
-  function LinkClass(type = null){
-    let classes = "inline-flex gap-1 py-2 px-6 rounded-full"
-    if(type === subpage){
-      classes += " bg-primary text-white"
+    if(!subpage){
+        subpage = 'profile'
     }
-    else{
-      classes += " bg-gray-200"
-    }
+    function LinkClass(type = null){
+        
+      let classes = "inline-flex gap-1 py-2 px-6 rounded-full"
+      if(type === subpage){
+        classes += " bg-primary text-white"
+      }
+      else{
+        classes += " bg-gray-200"
+      }
 
-    return classes
+      return classes
   }
-  console.log(subpage)
-
   return (
     <div>
-     <nav className="w-full flex justify-center mt-8 gap-2 mb-8">
+        <nav className="w-full flex justify-center mt-8 gap-2 mb-8">
       <Link className={LinkClass('profile')} to={'/account'}>
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
           <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
@@ -66,21 +41,8 @@ const Account = () => {
         My accommodations
       </Link>
     </nav>
-      {subpage === 'profile' && (
-        <div className="text-center max-w-lg mx-auto mb-8">
-          Logged in as {user.name} {user.email}
-          <button  onClick={logout} className="primary max-w-sm mt-2">
-            Logout
-          </button>
-        </div>
-      )}
-      {
-        subpage== 'places' &&(
-          <PlacesPage/>
-        )
-      }
     </div>
   )
 }
 
-export default Account
+export default AccountNav
