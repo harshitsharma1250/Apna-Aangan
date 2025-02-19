@@ -10,12 +10,15 @@ import jwt from 'jsonwebtoken'
 import imageDownloader from 'image-downloader'
 import {dirname} from 'path'
 import { fileURLToPath } from 'url';
+import multer from "multer";
+import fs from "fs";
+
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 dotenv.config();
 const app = express();
-app.use('/uploads', express.static(__dirname+'/uploads'));
+app.use('/uploads', express.static(__dirname + '/uploads'));
 
 
 const connectDb = async () =>{
@@ -113,12 +116,41 @@ app.post('/logout', (req,res)=>{
 
 app.post('/upload-by-link', async (req, res)=>{
     const {link} = req.body ;
-    const newName = Date.now() +'.jpg'
+    if (!link.startsWith('http://') && !link.startsWith('https://')) {
+        return res.status(400).json({ error: 'Invalid URL. Must start with http:// or https://' });
+    }
+
+    const newName = "photo" + Date.now() +'.jpg'
     await imageDownloader.image({
         url: link,
         dest : __dirname + '/uploads/' + newName,
     })
-    res.json(__dirname + '/uploads/' + newName)
+    res.json(newName)
+} )
+
+
+const photosMiddleware = multer({dest:'uploads/'})
+app.post('/upload', photosMiddleware.array('photos',100), async (req,res)=>{
+    if(!req.files){
+        return res.status(400).json({error: 'No files uploaded'})
+    }
+    try {
+        console.log(req.files)
+        const uploadedFiles = []
+        for(let i = 0;i<req.files.length;i++){
+            const {path, originalname} = req.files[i] ;
+            const parts = originalname.split('.')
+            const ext = parts[parts.length - 1] ;
+            const newPath = path.replace(/\\/g, '/') + '.' + ext;
+            fs.renameSync(path, newPath)
+            uploadedFiles.push(newPath.replace('uploads/', ''))
+        
+        }
+        res.json(uploadedFiles)
+    }catch (error) {
+        console.error("Upload Error:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
 } )
 
 app.listen(3000, (req, res)=>{
