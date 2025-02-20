@@ -202,7 +202,6 @@ app.get('/places', (req,res)=>{
                 return res.status(403).json({ error: "Forbidden: Invalid token" });
             }
             const {userId} = userData
-            console.log(userId);
             res.json(await PlaceModel.find({owner:userId}))
         });
 
@@ -212,6 +211,55 @@ app.get('/places', (req,res)=>{
     }
 })
 
+app.get('/places/:id', async (req,res)=>{
+    const {id} = req.params
+    res.json(await PlaceModel.findById(id));
+})
+
+app.put('/places', (req,res)=>{
+    try {
+        const token = req.cookies["jwt-authorization"];
+        const {
+            id,
+            title,
+            address,
+            photos,
+            description,
+            perks,
+            extraInfo,
+            checkIn,
+            checkOut,
+            maxGuests,
+        } = req.body ;
+
+        jwt.verify(token, process.env.JWT_SECRET, async (err, userData) => {
+            if (err) {
+                return res.status(403).json({ error: "Forbidden: Invalid token" });
+            }
+            const {userId} = userData
+            const placeDoc = await PlaceModel.findById(id)
+            if(userId === placeDoc.owner.toString()) {
+                placeDoc.set({
+                    title,
+                    address,
+                    photos,
+                    description,
+                    perks,
+                    extraInfo,
+                    checkIn,
+                    checkOut,
+                    maxGuests,
+                })
+                await placeDoc.save()
+                res.json(placeDoc)
+            }
+        });
+
+    } catch (error) {
+        console.error("Server Error:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+})
 app.listen(3000, (req, res)=>{
     console.log("Server listening on port 3000")
     connectDb();

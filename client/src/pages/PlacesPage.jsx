@@ -9,6 +9,7 @@ const PlacesPage = () => {
 
   useEffect(()=>{
     axios.get('/places').then(({data})=>{
+      console.log(data);
       setPlaces(data);
     })
   },[])
@@ -26,13 +27,21 @@ const PlacesPage = () => {
             </Link>
           </div>
 
-          <div className="mt-4">
-            {places.length >0 && places.map(place => {
-              <div className="bg-gray-200 p-4 rounded-2xl">
-                {place.title}
-              </div>
-            })}
-          </div>
+        <div className="mt-4">
+          {places.length > 0 && places.map((place, idx) => (
+              <Link to={'/account/places/'+place._id} key = {idx} className="flex gap-4 bg-gray-200 p-4 rounded-2xl">
+                <div className="w-32 h-32 bg-gray-300 shrink-0">
+                 {place.photos.length >0 && (
+                  <img src= {place.photos[0]} alt="" />
+                 ) }
+                </div>
+                <div className="grow-0 shrink">
+                  <h2 className="text-xl" > {place.title}</h2>
+                  <p className="text-sm mt-2">{place.description}</p>
+                </div>
+              </Link>
+          ))}
+        </div>
     </div>
   )
 }
