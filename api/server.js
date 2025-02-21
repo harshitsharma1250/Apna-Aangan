@@ -136,7 +136,7 @@ app.post('/upload', photosMiddleware.array('photos',100), async (req,res)=>{
         return res.status(400).json({error: 'No files uploaded'})
     }
     try {
-        console.log(req.files)
+        // console.log(req.files)
         const uploadedFiles = []
         for(let i = 0;i<req.files.length;i++){
             const {path, originalname} = req.files[i] ;
@@ -156,6 +156,8 @@ app.post('/upload', photosMiddleware.array('photos',100), async (req,res)=>{
 
 app.post('/places', async (req, res) => {
     try {
+        const { title, address, addedPhotos, description, perks, extraInfo, checkIn, checkOut, maxGuests, price } = req.body;
+
         const token = req.cookies["jwt-authorization"];
         if (!token) {
             return res.status(401).json({ error: "Unauthorized: No token provided" });
@@ -166,21 +168,20 @@ app.post('/places', async (req, res) => {
                 return res.status(403).json({ error: "Forbidden: Invalid token" });
             }
 
-            const { title, address, photos, description, perks, extraInfo, checkIn, checkOut, maxGuests } = req.body;
-
             const placeDoc = await PlaceModel.create({
                 owner: userData.userId, 
                 title,
                 address,
-                photos,
+                photos:addedPhotos,
                 description,
                 perks,
                 extraInfo,
                 checkIn,
                 checkOut,
                 maxGuests,
+                price
             });
-            console.log(userData)
+            // console.log(placeDoc)
             return res.json(placeDoc);
         });
 
@@ -190,7 +191,7 @@ app.post('/places', async (req, res) => {
     }
 });
 
-app.get('/places', (req,res)=>{
+app.get('/user-places', (req,res)=>{
     try {
         const token = req.cookies["jwt-authorization"];
         if (!token) {
@@ -216,21 +217,23 @@ app.get('/places/:id', async (req,res)=>{
     res.json(await PlaceModel.findById(id));
 })
 
-app.put('/places', (req,res)=>{
+app.put('/places', async (req,res)=>{
     try {
         const token = req.cookies["jwt-authorization"];
         const {
             id,
             title,
             address,
-            photos,
+            addedPhotos:photos,
             description,
             perks,
             extraInfo,
             checkIn,
             checkOut,
             maxGuests,
+            price
         } = req.body ;
+        console.log("Here is the request body ", req.body)
 
         jwt.verify(token, process.env.JWT_SECRET, async (err, userData) => {
             if (err) {
@@ -249,6 +252,7 @@ app.put('/places', (req,res)=>{
                     checkIn,
                     checkOut,
                     maxGuests,
+                    price
                 })
                 await placeDoc.save()
                 res.json(placeDoc)
@@ -260,6 +264,12 @@ app.put('/places', (req,res)=>{
         res.status(500).json({ error: "Internal Server Error" });
     }
 })
+
+app.get('/places', async (req,res)=>{
+    res.json(await PlaceModel.find())
+})
+
+
 app.listen(3000, (req, res)=>{
     console.log("Server listening on port 3000")
     connectDb();

@@ -19,7 +19,7 @@ const [extraInfo,setExtraInfo] = useState('');
 const [checkIn,setCheckIn] = useState('');
 const [checkOut,setCheckOut] = useState('');
 const [maxGuests,setMaxGuests] = useState(1);
-// const [price,setPrice] = useState(100);
+const [price,setPrice] = useState(100);
 const [redirect,setRedirect] = useState(false);
 // console.log(action)
 // console.log(title)
@@ -41,7 +41,7 @@ useEffect(()=>{
       setCheckIn(data.checkIn)
       setCheckOut(data.checkOut)
       setMaxGuests(data.maxGuests)
-      // setPrice(data.price)
+      setPrice(data.price)
     })
   }
 },[id])
@@ -71,16 +71,18 @@ function inputHeader(text) {
 
   async function savePlace(ev){
     ev.preventDefault()
+    console.log("checking if addPhotos is empty when saving the place data", addedPhotos)
     const placeData = {
         title,
-        description,
         address,
         addedPhotos,
+        description,
         perks,
         extraInfo,
         checkIn,
         checkOut,
         maxGuests,
+        price
     }
 
     if(id){
@@ -89,19 +91,7 @@ function inputHeader(text) {
       })
     }
     else{
-      const {data} = await axios.post('/places',
-        {
-          title,
-          description,
-          address,
-          addedPhotos,
-          perks,
-          extraInfo,
-          checkIn,
-          checkOut,
-          maxGuests,
-        }
-      )
+      const {data} = await axios.post('/places',placeData)
     }
 
     setRedirect('/account/places')
@@ -121,8 +111,6 @@ function inputHeader(text) {
         <input type="text" value={address} onChange={ev => setAddress(ev.target.value)}placeholder="address"/>
         {preInput('Photos','more = better')}
         <PhotosUploader addedPhotos={addedPhotos} onChange={setAddedPhotos} />
-        
-
 
         {preInput('Description','description of the place')}
         <textarea value={description} onChange={ev => setDescription(ev.target.value)} />
@@ -154,11 +142,11 @@ function inputHeader(text) {
             <input type="number" value={maxGuests}
                    onChange={ev => setMaxGuests(ev.target.value)}/>
           </div>
-          {/* <div>
+          <div>
             <h3 className="mt-2 -mb-1">Price per night</h3>
             <input type="number" value={price}
                    onChange={ev => setPrice(ev.target.value)}/>
-          </div> */}
+          </div>
         </div>
         <button className="primary my-4">Save</button>
       </form>
