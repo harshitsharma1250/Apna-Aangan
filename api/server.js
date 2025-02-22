@@ -13,7 +13,8 @@ import { fileURLToPath } from 'url';
 import multer from "multer";
 import fs from "fs";
 import {PlaceModel} from './models/Place.js'
-
+import {BookingModel} from './models/Booking.js'
+import { error } from 'console';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -269,7 +270,27 @@ app.get('/places', async (req,res)=>{
     res.json(await PlaceModel.find())
 })
 
+app.post('/bookings', (req,res)=>{
+    const {
+    place,
+    checkIn,
+    checkOut,
+    numberOfGuests,
+    name,
+    phone,
+    price} = req.body 
+    
+    BookingModel.create({
+        place, checkIn, checkOut, numberOfGuests, name, phone, price
+    }).then((err,doc)=>{
+        if(err){
+            throw error
+        }
+        res.json(doc)
+    })
+    
 
+})
 app.listen(3000, (req, res)=>{
     console.log("Server listening on port 3000")
     connectDb();
