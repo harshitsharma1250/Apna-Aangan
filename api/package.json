@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "NODE_ENV=production node server.js",
+    "build": "echo 'No build step required for Node.js backend"
   },
   "author": "",
   "license": "ISC",
