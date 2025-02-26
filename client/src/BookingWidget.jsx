@@ -1,7 +1,8 @@
-import { useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import {differenceInCalendarDays} from "date-fns";
 import axios from "axios";
 import { Navigate } from "react-router-dom";
+import { UserContext } from "./context/UserContext";
 const BookingWidget = ({place}) => {
 
   const [checkIn, setCheckIn] = useState('')
@@ -10,12 +11,29 @@ const BookingWidget = ({place}) => {
   const [name,setName] = useState('');
   const [phone,setPhone] = useState('');
   const [redirect,setRedirect] = useState('');
+  
+  const {user} = useContext(UserContext)
 
+  useEffect(()=>{
+    if(user){
+      setName(user.name);
+    }
+  },[user])
   async function bookThisPlace(){
-    const data = {checkIn, checkOut, numberOfGuests, name, phone, 
-    place:place.id, 
-    price:numberOfNights*place.price}
-    await axios.post('/bookings', data)
+    const response = await axios.post('/bookings', {
+      checkIn, 
+      checkOut, 
+      numberOfGuests, 
+      name, 
+      phone, 
+      place:place._id, 
+      price:numberOfNights*place.price})
+    const bookingId = response.data._id
+    setRedirect(`/account/bookings/${bookingId}`)
+  }
+
+  if(redirect){
+    return <Navigate to={redirect} />
   }
 
   let numberOfNights = 0 ;

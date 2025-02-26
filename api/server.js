@@ -14,7 +14,6 @@ import multer from "multer";
 import fs from "fs";
 import {PlaceModel} from './models/Place.js'
 import {BookingModel} from './models/Booking.js'
-import { error } from 'console';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -44,6 +43,18 @@ app.use(cors({
 
 app.use(express.json());
 app.use(cookieParser())
+
+function getUserDataFromToken(req){
+    return new Promise((resolve, reject) =>{
+        jwt.verify(req.cookies.token, process.env.JWT_SECRET, (err, userData) => {
+            if(err){
+                reject(err)
+            }else{
+                resolve(userData)
+            }
+        })
+    })
+}
 
 app.post('/register', async (req, res) => {
     const { name, email, password } = req.body;
@@ -270,27 +281,48 @@ app.get('/places', async (req,res)=>{
     res.json(await PlaceModel.find())
 })
 
-app.post('/bookings', (req,res)=>{
+app.post('/bookings', async (req,res)=>{
     const {
-    place,
-    checkIn,
-    checkOut,
-    numberOfGuests,
-    name,
-    phone,
-    price} = req.body 
-    
-    BookingModel.create({
-        place, checkIn, checkOut, numberOfGuests, name, phone, price
-    }).then((err,doc)=>{
-        if(err){
-            throw error
-        }
-        res.json(doc)
-    })
-    
+        place,
+        checkIn,
+        checkOut,
+        numberOfGuests,
+        name,
+        phone,
+        price,} = req.body 
+        const token = req.cookies["jwt-authorization"];
 
+    jwt.verify(token, process.env.JWT_SECRET, async (err, userData) => {
+        if (err) {
+            return res.status(403).json({ error: "Forbidden: Invalid token" });
+        }        
+        const BookingDoc = BookingModel.create({
+            place, checkIn, checkOut, numberOfGuests, name, phone, price, user:userData.userId
+        }).then((doc)=>{
+            res.json(doc)
+        }).catch((err)=>{
+            console.error("Error creating booking", err)
+            res.status(500).json({error: "Internal Server Error"})
+        })
+
+    });
+    
 })
+
+
+
+app.get('/bookings', async (req,res)=>{
+    const token = req.cookies["jwt-authorization"];
+
+    jwt.verify(token, process.env.JWT_SECRET, async (err, userData) => {
+        if (err) {
+            return res.status(403).json({ error: "Forbidden: Invalid token" });
+        }
+        const BookingDoc = await BookingModel.find({user:userData.userId}).populate('place')
+        res.json(BookingDoc);
+    });
+})
+
 app.listen(3000, (req, res)=>{
     console.log("Server listening on port 3000")
     connectDb();
