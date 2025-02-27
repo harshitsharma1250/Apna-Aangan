@@ -19,7 +19,7 @@ export default function PlaceGallery({place}) {
           </div>
           {place?.photos?.length > 0 && place.photos.map((photo, id) => (
             <div key = {id}>
-              <img src={"http://localhost:3000/uploads/"+photo} alt=""/>
+              <img src={"https://apna-aangan.onrender.com/uploads/"+photo} alt=""/>
             </div>
           ))}
         </div>

@@ -9,7 +9,7 @@ export default function PlaceImg({ place, className = null }) {
   
     return (
       <img
-        src={`http://localhost:3000/uploads/${place.photos[0]}`}
+        src={`https://apna-aangan.onrender.com/uploads/${place.photos[0]}`}
         className={className}
         alt="Place"
       />
