@@ -36,7 +36,7 @@ const connectDb = async () =>{
 
 app.use(cors({
     credentials:true,
-    origin: 'https://apna-aangan-frontend.onrender.com/',
+    origin: 'http://localhost:5173',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
 })) ;
